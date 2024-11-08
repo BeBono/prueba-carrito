@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Carrito de Compras</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+</head>
+<body>
+    <div class="container mt-5">
+        <h1 class="mb-4">Carrito de Compras</h1>
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th>Producto</th>
+                    <th>Cantidad</th>
+                    <th>Precio Unitario</th>
+                    <th>Subtotal</th>
+                </tr>
+            </thead>
+            <tbody id="carrito">
+                <!-- Los detalles del carrito se cargarán aquí dinámicamente -->
+            </tbody>
+        </table>
+        <h3>Total: $<span id="total"></span></h3>
+        <button onclick="realizarCompra()" class="btn btn-success mt-3">Realizar Compra</button>
+    </div>
+
+    <script>
+        // Cargar resumen
+        fetch('/api/comprar/resumen')
+            .then(response => response.json())
+            .then(data => {
+                const carritoContainer = document.getElementById('carrito');
+                let total = 0;
+                data.forEach(item => {
+                    const subtotal = item.cantidad * item.producto.precio;
+                    total += subtotal;
+                    const carritoHTML = `
+                        <tr>
+                            <td>${item.producto.nombre}</td>
+                            <td>${item.cantidad}</td>
+                            <td>$${item.producto.precio}</td>
+                            <td>$${subtotal.toFixed(2)}</td>
+                        </tr>
+                    `;
+                    carritoContainer.innerHTML += carritoHTML;
+                });
+                document.getElementById('total').innerText = total.toFixed(2);
+            })
+            .catch(error => console.error('Error al cargar el carrito:', error));
+
+        // Función para realizar la compra
+        function realizarCompra() {
+            fetch('/api/comprar/procesar', { method: 'POST' })
+                .then(response => response.json())
+                .then(data => {
+                    alert('Compra realizada con éxito');
+                    window.location.reload();
+                })
+                .catch(error => console.error('Error al realizar la compra:', error));
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Productos</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+</head>
+<body>
+    <div class="container mt-5">
+        <h1 class="mb-4">Productos Disponibles</h1>
+        <div id="productos" class="row">
+            <!-- Los productos se cargarán aquí dinámicamente -->
+        </div>
+    </div>
+
+    <script>
+        // Cargar productos desde la API
+        fetch('/api/productos')
+            .then(response => response.json())
+            .then(data => {
+                const productosContainer = document.getElementById('productos');
+                data.forEach(producto => {
+                    const productHTML = `
+                        <div class="col-md-4">
+                            <div class="card mb-4">
+                                ${producto.imagenUrl ? `<img src="${producto.imagenUrl}" class="card-img-top" alt="${producto.nombre}">` : ''}
+                                <div class="card-body">
+                                    <h5 class="card-title">${producto.nombre}</h5>
+                                    <p class="card-text">${producto.descripcion}</p>
+                                    <p class="card-text"><strong>Precio:</strong> $${producto.precio}</p>
+                                    <div class="form-group">
+                                        <label for="cantidad-${producto.id}">Cantidad:</label>
+                                        <input type="number" id="cantidad-${producto.id}" class="form-control" value="1" min="1">
+                                    </div>
+                                    <button onclick="agregarAlCarrito(${producto.id})" class="btn btn-primary">Agregar al carrito</button>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    productosContainer.innerHTML += productHTML;
+                });
+            })
+            .catch(error => console.error('Error al cargar productos:', error));
+
+        // Función para agregar producto al carrito
+        function agregarAlCarrito(productoId) {
+            const cantidad = document.getElementById(`cantidad-${productoId}`).value;
+            const usuarioId = 1    //ID INGRESADO MANUALMENTE, EL CUAL DEBE SER GENERADO EN EL ENTORNO DE AUTENTICACIÓN.
+            fetch('/api/carrito/agregar', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ productoId, cantidad, usuarioId})
+            })
+            .then(response => response.json())
+            .then(data => alert('Producto agregado al carrito'))
+            .catch(error => console.error('Error al agregar al carrito front:', error));
+        }
+    </script>
+</body>
+</html>
